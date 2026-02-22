@@ -184,6 +184,12 @@ function resetGame() {
     particles = [];
     if (powerUpTimerId) clearInterval(powerUpTimerId);
 
+    // Reset AI state
+    aiState = 'expand';
+    aiPlanSteps = 0;
+    aiPlanDir = null;
+    aiLoopPhase = 0;
+
     grid = Array(COLS).fill(0).map(() => Array(ROWS).fill(0));
     trails = Array(COLS).fill(0).map(() => Array(ROWS).fill(0));
 
