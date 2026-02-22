@@ -14,7 +14,8 @@ function initP1() {
         baseSpeed: 1,
         currentSpeed: 1,
         speedTimer: 0,
-        skipTicks: 0
+        skipTicks: 0,
+        hearts: 0
     };
 }
 
@@ -34,7 +35,8 @@ function initP2() {
         baseSpeed: 1,
         currentSpeed: 1,
         speedTimer: 0,
-        skipTicks: 0
+        skipTicks: 0,
+        hearts: 0
     };
 }
 
@@ -51,8 +53,14 @@ function checkCollisions(p, other) {
     // Atsitrenkimas į uodegas
     let cellTrail = trails[p.x][p.y];
     if (cellTrail === p.id) {
-        p.dead = true; // Į savo
-        createExplosion(p.x, p.y, p.color);
+        if (p.hearts > 0) {
+            p.hearts--;
+            trails[p.x][p.y] = 0; // "Pravalo" tą prasilenktą plytelę
+            createExplosion(p.x, p.y, '#e84393'); // Parodome širdelės praradimo efektą (rožinė)
+        } else {
+            p.dead = true; // Į savo uodegą
+            createExplosion(p.x, p.y, p.color);
+        }
     } else if (cellTrail === other.id) {
         other.dead = true; // Į priešininko
         createExplosion(other.x, other.y, other.color);

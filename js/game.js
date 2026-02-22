@@ -73,8 +73,11 @@ function computeScores() {
     let total = COLS * ROWS;
     p1.score = ((s1 / total) * 100).toFixed(1);
     document.getElementById("s1").innerText = p1.score;
+    if (document.getElementById("h1")) document.getElementById("h1").innerText = p1.hearts;
+
     p2.score = ((s2 / total) * 100).toFixed(1);
     document.getElementById("s2").innerText = p2.score;
+    if (document.getElementById("h2")) document.getElementById("h2").innerText = p2.hearts;
 }
 
 function startGame(mode, isCustom = false) {
@@ -140,6 +143,7 @@ function startCustomGame() {
     if (document.getElementById("puSpeed").checked) activePowerUpTypes.push('speed');
     if (document.getElementById("puSlow").checked) activePowerUpTypes.push('slowEnemy');
     if (document.getElementById("puPatch").checked) activePowerUpTypes.push('territoryPatch');
+    if (document.getElementById("puHeart").checked) activePowerUpTypes.push('heart');
 
     if (activePowerUpTypes.length === 0) {
         startGame('classic', true); // No powerups selected
@@ -204,14 +208,23 @@ function update() {
     updatePowerUps(p1);
     updatePowerUps(p2);
 
+    let oldP1 = { x: p1.x, y: p1.y };
+    let oldP2 = { x: p2.x, y: p2.y };
+    let bothAliveStart = !p1.dead && !p2.dead;
+
     processPlayer(p1, p2);
     processPlayer(p2, p1);
 
-    // Jei atsitrenkia kaktomuša
-    if (p1.x === p2.x && p1.y === p2.y && !p1.dead && !p2.dead) {
-        p1.dead = true;
-        p2.dead = true;
-        createExplosion(p1.x, p1.y, '#ffffff');
+    // Kaktomuša (susidūrimas į tą patį langelį arba susikeitimas vietomis)
+    if (bothAliveStart) {
+        let headOn = (p1.x === p2.x && p1.y === p2.y);
+        let swapped = (p1.x === oldP2.x && p1.y === oldP2.y && p2.x === oldP1.x && p2.y === oldP1.y);
+
+        if (headOn || swapped) {
+            p1.dead = true;
+            p2.dead = true;
+            createExplosion(p1.x, p1.y, '#ffffff');
+        }
     }
 
     if (!isGameOver) {

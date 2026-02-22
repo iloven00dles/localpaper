@@ -17,11 +17,12 @@ let currentMode = 'classic';
 let powerUps = []; // Crazy mode power-ups
 
 // Constants for Power-ups
-const POWER_UP_TYPES = ['speed', 'slowEnemy', 'territoryPatch'];
+const POWER_UP_TYPES = ['speed', 'slowEnemy', 'territoryPatch', 'heart'];
 const POWER_UP_COLORS = {
     'speed': '#f1c40f', // yellow
     'slowEnemy': '#3498db', // light blue
-    'territoryPatch': '#2ecc71' // green
+    'territoryPatch': '#2ecc71', // green
+    'heart': '#e84393' // pinkish red
 };
 let activePowerUpTypes = [...POWER_UP_TYPES];
 let powerUpTimerId = null;

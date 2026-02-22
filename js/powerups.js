@@ -57,6 +57,8 @@ function applyPowerUp(player, other, powerUp) {
         }
         floodFill(player);
         computeScores();
+    } else if (powerUp.type === 'heart') {
+        player.hearts++;
     }
 }
 
