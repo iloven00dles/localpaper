@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="lt">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,13 +34,79 @@
             font-weight: bold;
         }
 
-        .score1 { color: #ff4757; }
-        .score2 { color: #1e90ff; }
+        .score1 {
+            color: #ff4757;
+        }
+
+        .score2 {
+            color: #1e90ff;
+        }
 
         canvas {
             background-color: #2f3542;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             border-radius: 8px;
+            display: none;
+            /* Paslėpta pradžioje */
+        }
+
+        /* Pagrindinis Meniu */
+        .main-menu {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            backdrop-filter: blur(10px);
+        }
+
+        .main-menu h2 {
+            margin-top: 0;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #f1c40f;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .mode-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .mode-btn {
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .mode-classic {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .mode-classic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6);
+        }
+
+        .mode-crazy {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .mode-crazy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
         }
 
         .game-over {
@@ -54,6 +121,7 @@
             display: none;
             backdrop-filter: blur(5px);
             border: 1px solid #444;
+            z-index: 100;
         }
 
         .game-over h2 {
@@ -62,41 +130,85 @@
             margin-bottom: 20px;
         }
 
-        button {
+        .game-over-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .game-over button {
             padding: 10px 20px;
             font-size: 1.2rem;
             cursor: pointer;
-            background: #2ed573;
             color: white;
             border: none;
             border-radius: 6px;
             transition: background 0.2s, transform 0.1s;
         }
 
-        button:hover {
+        .btn-restart {
+            background: #2ed573;
+        }
+
+        .btn-restart:hover {
             background: #27ae60;
             transform: scale(1.05);
         }
 
-        button:active {
+        .btn-restart:active {
             transform: scale(0.95);
+        }
+
+        .btn-menu {
+            background: #747d8c;
+        }
+
+        .btn-menu:hover {
+            background: #57606f;
+            transform: scale(1.05);
+        }
+
+        .btn-menu:active {
+            transform: scale(0.95);
+        }
+
+        #gameContainer {
+            display: none;
+            /* Paslėpta pradžioje */
+            flex-direction: column;
+            align-items: center;
         }
     </style>
 </head>
+
 <body>
-    <h1>Paper.io - 2 Žaidėjai</h1>
-    <div class="scores">
-        <div class="score1">Žaidėjas 1 (WASD): <span id="s1">0</span>%</div>
-        <div class="score2">Žaidėjas 2 (Rodyklės): <span id="s2">0</span>%</div>
+    <div class="main-menu" id="mainMenu">
+        <h2>Paper.io - 2 Žaidėjai</h2>
+        <div class="mode-buttons">
+            <button class="mode-btn mode-classic" onclick="startGame('classic')">Classic Mode</button>
+            <button class="mode-btn mode-crazy" onclick="startGame('crazy')">Crazy Mode (Power-ups)</button>
+        </div>
     </div>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <div id="gameContainer">
+        <h1 id="modeTitle">Paper.io</h1>
+        <div class="scores">
+            <div class="score1">Žaidėjas 1 (WASD): <span id="s1">0</span>%</div>
+            <div class="score2">Žaidėjas 2 (Rodyklės): <span id="s2">0</span>%</div>
+        </div>
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+    </div>
 
     <div class="game-over" id="gameOverScreen">
         <h2 id="winnerText">Žaidimas Baigtas!</h2>
-        <button onclick="resetGame()">Žaisti Dar Kartą</button>
+        <div class="game-over-buttons">
+            <button class="btn-restart" onclick="resetGame()">Žaisti Dar Kartą</button>
+            <button class="btn-menu" onclick="showMainMenu()">Į Meniu</button>
+        </div>
     </div>
 
     <!-- Prijungiame atskirą JS failą -->
     <script src="script.js"></script>
 </body>
+
 </html>
