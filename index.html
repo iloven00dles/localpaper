@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2 Žaidėjų Paper.io</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        h1 {
+            margin: 10px 0;
+            font-size: 2rem;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .scores {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .score1 { color: #ff4757; }
+        .score2 { color: #1e90ff; }
+
+        canvas {
+            background-color: #2f3542;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            backdrop-filter: blur(5px);
+            border: 1px solid #444;
+        }
+
+        .game-over h2 {
+            margin-top: 0;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background: #2ed573;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background: #27ae60;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <h1>Paper.io - 2 Žaidėjai</h1>
+    <div class="scores">
+        <div class="score1">Žaidėjas 1 (WASD): <span id="s1">0</span>%</div>
+        <div class="score2">Žaidėjas 2 (Rodyklės): <span id="s2">0</span>%</div>
+    </div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <div class="game-over" id="gameOverScreen">
+        <h2 id="winnerText">Žaidimas Baigtas!</h2>
+        <button onclick="resetGame()">Žaisti Dar Kartą</button>
+    </div>
+
+    <!-- Prijungiame atskirą JS failą -->
+    <script src="script.js"></script>
+</body>
+</html>
