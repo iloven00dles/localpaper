@@ -101,6 +101,17 @@ canvas {
     box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
 }
 
+.mode-ai {
+    background: linear-gradient(135deg, #0984e3, #74b9ff);
+    color: white;
+    box-shadow: 0 4px 15px rgba(9, 132, 227, 0.4);
+}
+
+.mode-ai:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(9, 132, 227, 0.6);
+}
+
 .mode-custom {
     background: linear-gradient(135deg, #9b59b6, #8e44ad);
     color: white;

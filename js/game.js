@@ -95,20 +95,34 @@ function startGame(mode, isCustom = false) {
     document.getElementById("gameContainer").style.display = "flex";
     document.getElementById("gameCanvas").style.display = "block";
 
-    // Nustatome pavadinimą
     const title = document.getElementById("modeTitle");
+    const name1 = document.getElementById("name1");
+    const name2 = document.getElementById("name2");
+
     if (mode === 'classic') {
         title.innerText = "Paper.io - Classic Mode";
         title.style.color = "#fff";
         title.style.textShadow = "none";
+        name1.innerText = "Žaidėjas 1 (WASD):";
+        name2.innerText = "Žaidėjas 2 (Rodyklės):";
     } else if (mode === 'crazy') {
         title.innerText = "Paper.io - Crazy Mode!";
         title.style.color = "#e74c3c";
         title.style.textShadow = "0 0 10px rgba(231, 76, 60, 0.8)";
+        name1.innerText = "Žaidėjas 1 (WASD):";
+        name2.innerText = "Žaidėjas 2 (Rodyklės):";
     } else if (mode === 'custom') {
         title.innerText = "Paper.io - Custom Mode!";
         title.style.color = "#9b59b6";
         title.style.textShadow = "0 0 10px rgba(155, 89, 182, 0.8)";
+        name1.innerText = "Žaidėjas 1 (WASD):";
+        name2.innerText = "Žaidėjas 2 (Rodyklės):";
+    } else if (mode === 'ai') {
+        title.innerText = "Paper.io - PvE (Prieš AI)!";
+        title.style.color = "#0984e3";
+        title.style.textShadow = "0 0 10px rgba(9, 132, 227, 0.8)";
+        name1.innerText = "AI Botas (Raudonas):";
+        name2.innerText = "Tu (Rodyklės):";
     }
 
     resetGame();
@@ -212,6 +226,10 @@ function update() {
     let oldP2 = { x: p2.x, y: p2.y };
     let bothAliveStart = !p1.dead && !p2.dead;
 
+    if (currentMode === 'ai') {
+        updateAI(p1, p2);
+    }
+
     processPlayer(p1, p2);
     processPlayer(p2, p1);
 
@@ -228,9 +246,13 @@ function update() {
     }
 
     if (!isGameOver) {
-        if (p1.dead && p2.dead) endGame("Lygiosios!");
-        else if (p1.dead) endGame("Mėlynas (Žaidėjas 2) Laimėjo!");
-        else if (p2.dead) endGame("Raudonas (Žaidėjas 1) Laimėjo!");
+        let textTie = "Lygiosios!";
+        let textP1 = currentMode === 'ai' ? "AI Botas Laimėjo!" : "Raudonas (Žaidėjas 1) Laimėjo!";
+        let textP2 = currentMode === 'ai' ? "Tu Laimėjai!" : "Mėlynas (Žaidėjas 2) Laimėjo!";
+
+        if (p1.dead && p2.dead) endGame(textTie);
+        else if (p1.dead) endGame(textP2);
+        else if (p2.dead) endGame(textP1);
     }
 
     draw();
@@ -272,9 +294,12 @@ function endGame(text) {
 
         let scoreText = document.createElement("div");
         scoreText.id = "goScores";
+        let p1Name = currentMode === 'ai' ? "AI Botas (Raudonas)" : "Raudonas (WASD)";
+        let p2Name = currentMode === 'ai' ? "Tu (Rodyklės)" : "Mėlynas (Rodyklės)";
+
         scoreText.innerHTML = `
-            <div style="font-size: 1.5rem; margin-bottom: 5px; color:${p1.color}; font-weight:bold; text-shadow: 0 0 5px rgba(255,71,87,0.5);">Raudonas (WASD): ${p1.score}%</div>
-            <div style="font-size: 1.5rem; margin-bottom: 20px; color:${p2.color}; font-weight:bold; text-shadow: 0 0 5px rgba(30,144,255,0.5);">Mėlynas (Rodyklės): ${p2.score}%</div>
+            <div style="font-size: 1.5rem; margin-bottom: 5px; color:${p1.color}; font-weight:bold; text-shadow: 0 0 5px rgba(255,71,87,0.5);">${p1Name}: ${p1.score}%</div>
+            <div style="font-size: 1.5rem; margin-bottom: 20px; color:${p2.color}; font-weight:bold; text-shadow: 0 0 5px rgba(30,144,255,0.5);">${p2Name}: ${p2.score}%</div>
         `;
         goScreen.insertBefore(scoreText, document.querySelector(".game-over-buttons"));
 
@@ -287,10 +312,12 @@ window.addEventListener("keydown", (e) => {
         e.preventDefault();
     }
 
-    if ((e.key === "w" || e.key === "W") && p1.dy === 0) { p1.nextDx = 0; p1.nextDy = -1; }
-    if ((e.key === "s" || e.key === "S") && p1.dy === 0) { p1.nextDx = 0; p1.nextDy = 1; }
-    if ((e.key === "a" || e.key === "A") && p1.dx === 0) { p1.nextDx = -1; p1.nextDy = 0; }
-    if ((e.key === "d" || e.key === "D") && p1.dx === 0) { p1.nextDx = 1; p1.nextDy = 0; }
+    if (currentMode !== 'ai') {
+        if ((e.key === "w" || e.key === "W") && p1.dy === 0) { p1.nextDx = 0; p1.nextDy = -1; }
+        if ((e.key === "s" || e.key === "S") && p1.dy === 0) { p1.nextDx = 0; p1.nextDy = 1; }
+        if ((e.key === "a" || e.key === "A") && p1.dx === 0) { p1.nextDx = -1; p1.nextDy = 0; }
+        if ((e.key === "d" || e.key === "D") && p1.dx === 0) { p1.nextDx = 1; p1.nextDy = 0; }
+    }
 
     if (e.key === "ArrowUp" && p2.dy === 0) { p2.nextDx = 0; p2.nextDy = -1; }
     if (e.key === "ArrowDown" && p2.dy === 0) { p2.nextDx = 0; p2.nextDy = 1; }

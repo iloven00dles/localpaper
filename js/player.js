@@ -148,3 +148,76 @@ function dieAndClear(p) {
     }
     computeScores();
 }
+
+function updateAI(bot, enemy) {
+    if (bot.dead) return;
+
+    // Kadangi AI p2 gali judėti kas kelintą kadrą, tikrinam tik kai jam laikas
+    let moveMod = bot.skipTicks > 0 ? 4 : 2;
+    if (bot.currentSpeed > 1) moveMod = 1;
+    if (gameTick % moveMod !== 0) return;
+
+    let dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]]; // Up, Down, Left, Right
+    let safeDirs = [];
+    let trailLen = bot.trailCells ? bot.trailCells.length : 0;
+
+    for (let d of dirs) {
+        // Negalima judėti atgal
+        if (d[0] === -bot.dx && d[0] !== 0) continue;
+        if (d[1] === -bot.dy && d[1] !== 0) continue;
+
+        let nx = bot.x + d[0];
+        let ny = bot.y + d[1];
+
+        // Sienos
+        if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) continue;
+        // Savo uodega (nebent turi daug širdžių, bet AI kol kas nerizikuos)
+        if (trails[nx][ny] === bot.id) continue;
+
+        safeDirs.push(d);
+    }
+
+    if (safeDirs.length === 0) return; // Nėra kur eiti, greičiausiai mirs
+
+    // Ar dabartinė kryptis saugi?
+    let currentIsSafe = safeDirs.some(d => d[0] === bot.dx && d[1] === bot.dy);
+
+    // Noras grįžti namo
+    let shouldReturnHome = trailLen > 15 && Math.random() < 0.8;
+    // Visgi kartais norisi pasukti šiaip
+    let shouldTurnRandomly = Math.random() < 0.1;
+
+    let chosenDir = null;
+
+    if (!currentIsSafe || shouldReturnHome || shouldTurnRandomly) {
+        // Paieškosim prioritetinių krypčių:
+        // 1. Grįžti į savo teritoriją `grid[nx][ny] === bot.id` jei reikia
+        // 2. Kirsti priešo uodegą, jei mato šalia.
+        let territoryDirs = [];
+        let attackDirs = [];
+
+        for (let d of safeDirs) {
+            let nx = bot.x + d[0];
+            let ny = bot.y + d[1];
+            if (grid[nx][ny] === bot.id) territoryDirs.push(d);
+            if (trails[nx][ny] === enemy.id) attackDirs.push(d);
+        }
+
+        if (attackDirs.length > 0) {
+            chosenDir = attackDirs[Math.floor(Math.random() * attackDirs.length)]; // Puola
+        } else if (shouldReturnHome && territoryDirs.length > 0) {
+            chosenDir = territoryDirs[Math.floor(Math.random() * territoryDirs.length)]; // Grįžta
+        } else {
+            // Kitaip tiesiog atsitiktinė saugi kryptis
+            chosenDir = safeDirs[Math.floor(Math.random() * safeDirs.length)];
+        }
+    } else {
+        // Einam toliau ta pačia kryptimi
+        chosenDir = [bot.dx, bot.dy];
+    }
+
+    if (chosenDir) {
+        bot.nextDx = chosenDir[0];
+        bot.nextDy = chosenDir[1];
+    }
+}
