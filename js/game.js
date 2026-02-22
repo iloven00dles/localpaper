@@ -105,12 +105,14 @@ function startGame(mode, isCustom = false) {
         title.style.textShadow = "none";
         name1.innerText = "Žaidėjas 1 (WASD):";
         name2.innerText = "Žaidėjas 2 (Rodyklės):";
+        activePowerUpTypes = []; // No powerups in classic
     } else if (mode === 'crazy') {
         title.innerText = "Paper.io - Crazy Mode!";
         title.style.color = "#e74c3c";
         title.style.textShadow = "0 0 10px rgba(231, 76, 60, 0.8)";
         name1.innerText = "Žaidėjas 1 (WASD):";
         name2.innerText = "Žaidėjas 2 (Rodyklės):";
+        // activePowerUpTypes already set to all if not custom
     } else if (mode === 'custom') {
         title.innerText = "Paper.io - Custom Mode!";
         title.style.color = "#9b59b6";
@@ -123,7 +125,14 @@ function startGame(mode, isCustom = false) {
         title.style.textShadow = "0 0 10px rgba(9, 132, 227, 0.8)";
         name1.innerText = "AI Botas (Raudonas):";
         name2.innerText = "Tu (Rodyklės):";
+        activePowerUpTypes = []; // No powerups in AI mode
     }
+
+    // Rodyti arba slėpti širdeles
+    const showHearts = activePowerUpTypes.includes('heart');
+    const displayStyle = showHearts ? "inline" : "none";
+    document.getElementById("heartsWrap1").style.display = displayStyle;
+    document.getElementById("heartsWrap2").style.display = displayStyle;
 
     resetGame();
 }
