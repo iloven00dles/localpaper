@@ -17,10 +17,11 @@ let currentMode = 'classic';
 let powerUps = []; // Crazy mode power-ups
 
 // Constants for Power-ups
-const POWER_UP_TYPES = ['speed', 'slowEnemy'];
+const POWER_UP_TYPES = ['speed', 'slowEnemy', 'territoryPatch'];
 const POWER_UP_COLORS = {
     'speed': '#f1c40f', // yellow
-    'slowEnemy': '#3498db' // light blue
+    'slowEnemy': '#3498db', // light blue
+    'territoryPatch': '#2ecc71' // green
 };
 let powerUpTimerId = null;
 
@@ -208,6 +209,30 @@ function applyPowerUp(player, other, powerUp) {
         player.speedTimer = 100; // 50 tickų ~ 5 sekundės (dabar tick 50ms)
     } else if (powerUp.type === 'slowEnemy') {
         other.skipTicks = 60; // Priešas praleidžia kas antrą ticką tam tikrą laiką
+    } else if (powerUp.type === 'territoryPatch') {
+        let radius = 2; // 5x5 dydžio teritorijos lopas aplink
+        for (let i = powerUp.x - radius; i <= powerUp.x + radius; i++) {
+            for (let j = powerUp.y - radius; j <= powerUp.y + radius; j++) {
+                if (i >= 0 && i < COLS && j >= 0 && j < ROWS) {
+                    if (grid[i][j] !== player.id) {
+                        grid[i][j] = player.id;
+                        trails[i][j] = 0; // Panaikinti visas uodegas tame plote
+
+                        // Jei lopinėlis atsiranda ant priešo galvos – jis numiršta
+                        if (!other.dead && other.x === i && other.y === j) {
+                            other.dead = true;
+                        }
+
+                        // Pridedamas efektas naujai atsiradusiam plotui
+                        if (Math.random() > 0.6) {
+                            createExplosion(i, j, player.terrColor);
+                        }
+                    }
+                }
+            }
+        }
+        floodFill(player);
+        computeScores();
     }
 }
 
@@ -277,6 +302,18 @@ function floodFill(player) {
                 if (!other.dead && other.x === x && other.y === y) {
                     other.dead = true;
                 }
+
+                // Patikrinam ar šitame langelyje buvo power up
+                if (currentMode === 'crazy') {
+                    for (let i = powerUps.length - 1; i >= 0; i--) {
+                        let pu = powerUps[i];
+                        if (pu.x === x && pu.y === y) {
+                            applyPowerUp(player, other, pu);
+                            powerUps.splice(i, 1);
+                        }
+                    }
+                }
+
                 grid[x][y] = player.id;
 
                 // Teritorijos uzpildymo animacija (kas kelinta kad neuzlagintu)
@@ -434,8 +471,8 @@ function update() {
 
     if (!isGameOver) {
         if (p1.dead && p2.dead) endGame("Lygiosios!");
-        else if (p1.dead) endGame("Žaidėjas 2 Laimėjo!");
-        else if (p2.dead) endGame("Žaidėjas 1 Laimėjo!");
+        else if (p1.dead) endGame("Mėlynas (Žaidėjas 2) Laimėjo!");
+        else if (p2.dead) endGame("Raudonas (Žaidėjas 1) Laimėjo!");
     }
 
     draw();
@@ -456,8 +493,37 @@ function endGame(text) {
     setTimeout(() => {
         clearInterval(gameLoop);
         if (powerUpTimerId) clearInterval(powerUpTimerId);
-        document.getElementById("winnerText").innerText = text;
-        document.getElementById("gameOverScreen").style.display = "block";
+
+        const winnerText = document.getElementById("winnerText");
+        winnerText.innerText = text;
+
+        // Pakeiciame teksto spalvas ir stilių atitinkamai pagal laimėtoją
+        if (p1.dead && !p2.dead) {
+            winnerText.style.color = p2.color; // Mėlynas
+            winnerText.style.textShadow = `0 0 15px ${p2.color}`;
+        } else if (p2.dead && !p1.dead) {
+            winnerText.style.color = p1.color; // Raudonas
+            winnerText.style.textShadow = `0 0 15px ${p1.color}`;
+        } else {
+            winnerText.style.color = "#fff";
+            winnerText.style.textShadow = "none";
+        }
+
+        let goScreen = document.getElementById("gameOverScreen");
+
+        // Atvaizduojame rezultatus
+        let oldScore = document.getElementById("goScores");
+        if (oldScore) oldScore.remove();
+
+        let scoreText = document.createElement("div");
+        scoreText.id = "goScores";
+        scoreText.innerHTML = `
+            <div style="font-size: 1.5rem; margin-bottom: 5px; color:${p1.color}; font-weight:bold; text-shadow: 0 0 5px rgba(255,71,87,0.5);">Raudonas (WASD): ${p1.score}%</div>
+            <div style="font-size: 1.5rem; margin-bottom: 20px; color:${p2.color}; font-weight:bold; text-shadow: 0 0 5px rgba(30,144,255,0.5);">Mėlynas (Rodyklės): ${p2.score}%</div>
+        `;
+        goScreen.insertBefore(scoreText, document.querySelector(".game-over-buttons"));
+
+        goScreen.style.display = "block";
     }, 1500); // 1.5 seconds wait for particles
 }
 
