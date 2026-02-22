@@ -14,6 +14,31 @@
         <div class="mode-buttons">
             <button class="mode-btn mode-classic" onclick="startGame('classic')">Classic Mode</button>
             <button class="mode-btn mode-crazy" onclick="startGame('crazy')">Crazy Mode (Power-ups)</button>
+            <button class="mode-btn mode-custom" onclick="openCustomMenu()">Custom Mode</button>
+        </div>
+    </div>
+
+    <div class="main-menu" id="customMenu" style="display: none;">
+        <h2>Custom Mode nustatymai</h2>
+        <div class="settings-group">
+            <label>Arenos Dydis:</label>
+            <select id="arenaSize">
+                <option value="small">Mažytė (600x400)</option>
+                <option value="medium" selected>Vidutinė (800x600)</option>
+                <option value="large">Didelė (1000x800)</option>
+            </select>
+        </div>
+        <div class="settings-group" style="text-align: left; margin: 20px 0;">
+            <label style="display:block; margin-bottom:10px; text-align:center;">Power-ups:</label>
+            <div><input type="checkbox" id="puSpeed" checked> <label for="puSpeed">Greitis (Speed)</label></div>
+            <div><input type="checkbox" id="puSlow" checked> <label for="puSlow">Lėtina Priešą (Slow Enemy)</label>
+            </div>
+            <div><input type="checkbox" id="puPatch" checked> <label for="puPatch">Teritorijos Dalis (Patch)</label>
+            </div>
+        </div>
+        <div class="mode-buttons">
+            <button class="mode-btn btn-restart" onclick="startCustomGame()">Pradėti Žaidimą</button>
+            <button class="mode-btn btn-menu" onclick="closeCustomMenu()">Atgal</button>
         </div>
     </div>
 

@@ -40,7 +40,7 @@ function floodFill(player) {
                 }
 
                 // Patikrinam ar šitame langelyje buvo power up
-                if (currentMode === 'crazy') {
+                if (currentMode === 'crazy' || currentMode === 'custom') {
                     for (let i = powerUps.length - 1; i >= 0; i--) {
                         let pu = powerUps[i];
                         if (pu.x === x && pu.y === y) {
@@ -77,9 +77,18 @@ function computeScores() {
     document.getElementById("s2").innerText = p2.score;
 }
 
-function startGame(mode) {
+function startGame(mode, isCustom = false) {
+    if (!isCustom) {
+        canvas.width = 800;
+        canvas.height = 600;
+        COLS = canvas.width / CELL_SIZE;
+        ROWS = canvas.height / CELL_SIZE;
+        activePowerUpTypes = [...POWER_UP_TYPES];
+    }
+
     currentMode = mode;
     document.getElementById("mainMenu").style.display = "none";
+    document.getElementById("customMenu").style.display = "none";
     document.getElementById("gameContainer").style.display = "flex";
     document.getElementById("gameCanvas").style.display = "block";
 
@@ -89,13 +98,54 @@ function startGame(mode) {
         title.innerText = "Paper.io - Classic Mode";
         title.style.color = "#fff";
         title.style.textShadow = "none";
-    } else {
+    } else if (mode === 'crazy') {
         title.innerText = "Paper.io - Crazy Mode!";
         title.style.color = "#e74c3c";
         title.style.textShadow = "0 0 10px rgba(231, 76, 60, 0.8)";
+    } else if (mode === 'custom') {
+        title.innerText = "Paper.io - Custom Mode!";
+        title.style.color = "#9b59b6";
+        title.style.textShadow = "0 0 10px rgba(155, 89, 182, 0.8)";
     }
 
     resetGame();
+}
+
+function openCustomMenu() {
+    document.getElementById("mainMenu").style.display = "none";
+    document.getElementById("customMenu").style.display = "block";
+}
+
+function closeCustomMenu() {
+    document.getElementById("customMenu").style.display = "none";
+    document.getElementById("mainMenu").style.display = "block";
+}
+
+function startCustomGame() {
+    const size = document.getElementById("arenaSize").value;
+    if (size === 'small') {
+        canvas.width = 600;
+        canvas.height = 400;
+    } else if (size === 'large') {
+        canvas.width = 1000;
+        canvas.height = 800;
+    } else {
+        canvas.width = 800;
+        canvas.height = 600;
+    }
+    COLS = canvas.width / CELL_SIZE;
+    ROWS = canvas.height / CELL_SIZE;
+
+    activePowerUpTypes = [];
+    if (document.getElementById("puSpeed").checked) activePowerUpTypes.push('speed');
+    if (document.getElementById("puSlow").checked) activePowerUpTypes.push('slowEnemy');
+    if (document.getElementById("puPatch").checked) activePowerUpTypes.push('territoryPatch');
+
+    if (activePowerUpTypes.length === 0) {
+        startGame('classic', true); // No powerups selected
+    } else {
+        startGame('custom', true);
+    }
 }
 
 function showMainMenu() {
@@ -137,8 +187,8 @@ function resetGame() {
     if (gameLoop) clearInterval(gameLoop);
     gameLoop = setInterval(update, 50); // Greitesnis loop del animaciju, bet judesim reciau
 
-    // Crazy mod power-ups
-    if (currentMode === 'crazy') {
+    // Crazy mod ir custom power-ups
+    if (currentMode === 'crazy' || currentMode === 'custom') {
         powerUpTimerId = setInterval(spawnPowerUp, 5000); // Kas 5 sekundes šansas atsirasti power-up
     }
 

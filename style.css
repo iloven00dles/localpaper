@@ -101,6 +101,38 @@ canvas {
     box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
 }
 
+.mode-custom {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+    box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4);
+}
+
+.mode-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(155, 89, 182, 0.6);
+}
+
+#customMenu {
+    font-size: 1.2rem;
+}
+
+#customMenu select {
+    padding: 10px;
+    border-radius: 5px;
+    background: #2f3542;
+    color: white;
+    border: 1px solid #747d8c;
+    font-family: inherit;
+    font-size: 1rem;
+    margin-top: 5px;
+}
+
+#customMenu input[type="checkbox"] {
+    transform: scale(1.5);
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
 .game-over {
     position: absolute;
     top: 50%;

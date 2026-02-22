@@ -1,7 +1,7 @@
 function initP1() {
     return {
         id: 1,
-        x: 15, y: 30,
+        x: Math.floor(COLS * 0.2), y: Math.floor(ROWS / 2),
         dx: 1, dy: 0,
         nextDx: 1, nextDy: 0,
         color: "#ff4757",
@@ -21,7 +21,7 @@ function initP1() {
 function initP2() {
     return {
         id: 2,
-        x: 65, y: 30,
+        x: Math.floor(COLS * 0.8), y: Math.floor(ROWS / 2),
         dx: -1, dy: 0,
         nextDx: -1, nextDy: 0,
         color: "#1e90ff",
@@ -112,7 +112,7 @@ function processPlayer(p, otherP) {
     handleTerritoryAndTrail(p);
 
     // Check power-up collection
-    if (currentMode === 'crazy') {
+    if (currentMode === 'crazy' || currentMode === 'custom') {
         for (let i = powerUps.length - 1; i >= 0; i--) {
             let pu = powerUps[i];
             if (p.x === pu.x && p.y === pu.y) {

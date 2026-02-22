@@ -12,7 +12,8 @@ function spawnPowerUp() {
         let py = Math.floor(Math.random() * (ROWS - 4)) + 2;
 
         if (grid[px][py] === 0 && trails[px][py] === 0) {
-            let type = POWER_UP_TYPES[Math.floor(Math.random() * POWER_UP_TYPES.length)];
+            if (activePowerUpTypes.length === 0) return;
+            let type = activePowerUpTypes[Math.floor(Math.random() * activePowerUpTypes.length)];
             powerUps.push({
                 x: px,
                 y: py,

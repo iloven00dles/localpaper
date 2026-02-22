@@ -2,8 +2,8 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 const CELL_SIZE = 10;
-const COLS = canvas.width / CELL_SIZE;
-const ROWS = canvas.height / CELL_SIZE;
+let COLS = canvas.width / CELL_SIZE;
+let ROWS = canvas.height / CELL_SIZE;
 
 let grid = [];
 let trails = [];
@@ -23,6 +23,7 @@ const POWER_UP_COLORS = {
     'slowEnemy': '#3498db', // light blue
     'territoryPatch': '#2ecc71' // green
 };
+let activePowerUpTypes = [...POWER_UP_TYPES];
 let powerUpTimerId = null;
 
 // Dalelės efektams
