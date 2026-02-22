@@ -1,0 +1,172 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #1a1a1a;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+h1 {
+    margin: 10px 0;
+    font-size: 2rem;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.scores {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.score1 {
+    color: #ff4757;
+}
+
+.score2 {
+    color: #1e90ff;
+}
+
+canvas {
+    background-color: #2f3542;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    display: none;
+    /* Paslėpta pradžioje */
+}
+
+/* Pagrindinis Meniu */
+.main-menu {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+    border: 1px solid #333;
+    backdrop-filter: blur(10px);
+}
+
+.main-menu h2 {
+    margin-top: 0;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    color: #f1c40f;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.mode-btn {
+    padding: 15px 30px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+
+.mode-classic {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+}
+
+.mode-classic:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6);
+}
+
+.mode-crazy {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+}
+
+.mode-crazy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.6);
+}
+
+.game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    display: none;
+    backdrop-filter: blur(5px);
+    border: 1px solid #444;
+    z-index: 100;
+}
+
+.game-over h2 {
+    margin-top: 0;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.game-over-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.game-over button {
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.btn-restart {
+    background: #2ed573;
+}
+
+.btn-restart:hover {
+    background: #27ae60;
+    transform: scale(1.05);
+}
+
+.btn-restart:active {
+    transform: scale(0.95);
+}
+
+.btn-menu {
+    background: #747d8c;
+}
+
+.btn-menu:hover {
+    background: #57606f;
+    transform: scale(1.05);
+}
+
+.btn-menu:active {
+    transform: scale(0.95);
+}
+
+#gameContainer {
+    display: none;
+    /* Paslėpta pradžioje */
+    flex-direction: column;
+    align-items: center;
+}
