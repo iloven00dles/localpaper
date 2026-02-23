@@ -150,33 +150,27 @@ function dieAndClear(p) {
 }
 
 // AI būsenos kintamieji (state machine)
-let aiState = 'expand';    // 'expand', 'return', 'attack'
-let aiPlanSteps = 0;       // Kiek žingsnių liko dabartiniam planui
-let aiPlanDir = null;       // Dabartinė suplanuota kryptis
-let aiLoopPhase = 0;       // Kilpos fazė: 0=pirmyn, 1=šonas, 2=atgal, 3=šonas2
-let aiLoopSize = 8;        // Kilpos dydis (kiek žingsnių kiekviena kryptimi)
-let aiLoopSideSize = 6;    // Kilpos plotis
+let aiState = 'expand';    // 'expand', 'return', 'attack', 'hunt'
+let aiPlanSteps = 0;
+let aiPlanDir = null;
+let aiLoopPhase = 0;
+let aiLoopSize = 8;
+let aiLoopSideSize = 6;
 
 function aiPickNewLoop(bot) {
-    // Parenkame naują kilpą teritorijai užimti
-    // Atsitiktinai parenkame kilpos dydį
-    aiLoopSize = 6 + Math.floor(Math.random() * 10);   // 6-15
-    aiLoopSideSize = 4 + Math.floor(Math.random() * 6); // 4-9
+    aiLoopSize = 6 + Math.floor(Math.random() * 10);
+    aiLoopSideSize = 4 + Math.floor(Math.random() * 6);
     aiLoopPhase = 0;
 
-    // Parenkame kryptį: randame teritorijos kraštą ir einame nuo jo
-    // Bandome eiti ta kryptimi, kuria yra daugiausiai tuščio ploto
     const testDirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
     let bestDir = null;
     let bestEmpty = -1;
 
     for (let td of testDirs) {
-        // Negalima judėti atgal
         if (td[0] === -bot.dx && td[0] !== 0) continue;
         if (td[1] === -bot.dy && td[1] !== 0) continue;
 
         let emptyCount = 0;
-        // Patikriname kiek tuščio ploto ta kryptimi (10 langelių gilyn)
         for (let step = 1; step <= 15; step++) {
             let tx = bot.x + td[0] * step;
             let ty = bot.y + td[1] * step;
@@ -193,24 +187,21 @@ function aiPickNewLoop(bot) {
         aiPlanDir = bestDir;
         aiPlanSteps = aiLoopSize;
     } else {
-        // Fallback: einam bet kuria saugia kryptimi
         aiPlanDir = [bot.dx, bot.dy];
         aiPlanSteps = 5;
     }
 }
 
 function aiFindDirToHome(bot) {
-    // BFS rasti artimiausią kelią atgal į savo teritoriją
     const maxSearch = 800;
     let visited = {};
-    let queue = [[bot.x, bot.y, null]]; // x, y, pirmoji kryptis
+    let queue = [[bot.x, bot.y, null]];
     visited[bot.x + ',' + bot.y] = true;
     let head = 0;
     const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
 
     while (head < queue.length && head < maxSearch) {
         let [cx, cy, firstDir] = queue[head++];
-
         for (let d of dirs) {
             let nx = cx + d[0];
             let ny = cy + d[1];
@@ -218,30 +209,46 @@ function aiFindDirToHome(bot) {
             let key = nx + ',' + ny;
             if (visited[key]) continue;
             visited[key] = true;
-
-            // Savo uodegos vengimas
             if (trails[nx][ny] === bot.id) continue;
-
             let newFirstDir = firstDir || d;
-
-            // Radome savo teritoriją!
-            if (grid[nx][ny] === bot.id) {
-                return newFirstDir;
-            }
-
+            if (grid[nx][ny] === bot.id) return newFirstDir;
             queue.push([nx, ny, newFirstDir]);
         }
     }
-    return null; // Neradome kelio
+    return null;
+}
+
+// BFS: randa trumpiausią kelią link tikslo (tx, ty), vengia savo uodegos
+function aiFindDirToTarget(bot, tx, ty) {
+    const maxSearch = 1200;
+    let visited = {};
+    let queue = [[bot.x, bot.y, null]];
+    visited[bot.x + ',' + bot.y] = true;
+    let head = 0;
+    const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+    while (head < queue.length && head < maxSearch) {
+        let [cx, cy, firstDir] = queue[head++];
+        for (let d of dirs) {
+            let nx = cx + d[0];
+            let ny = cy + d[1];
+            if (nx < 1 || nx >= COLS - 1 || ny < 1 || ny >= ROWS - 1) continue;
+            let key = nx + ',' + ny;
+            if (visited[key]) continue;
+            visited[key] = true;
+            if (trails[nx][ny] === bot.id) continue; // vengiam savo uodegos
+            let newFirstDir = firstDir || d;
+            if (nx === tx && ny === ty) return newFirstDir;
+            queue.push([nx, ny, newFirstDir]);
+        }
+    }
+    return null;
 }
 
 function aiGetPerpendicularDir(dir) {
-    // Grąžina statmeną kryptį (atsitiktinai vieną iš dviejų)
     if (dir[0] === 0) {
-        // Judame vertikaliai, statmena = horizontali
         return Math.random() < 0.5 ? [1, 0] : [-1, 0];
     } else {
-        // Judame horizontaliai, statmena = vertikali
         return Math.random() < 0.5 ? [0, 1] : [0, -1];
     }
 }
@@ -257,7 +264,6 @@ function aiIsDirSafe(bot, d) {
 function updateAI(bot, enemy) {
     if (bot.dead) return;
 
-    // AI judėjimo tempas
     let moveMod = bot.skipTicks > 0 ? 4 : 2;
     if (bot.currentSpeed > 1) moveMod = 1;
     if (gameTick % moveMod !== 0) return;
@@ -266,11 +272,11 @@ function updateAI(bot, enemy) {
     let trailLen = bot.trailCells ? bot.trailCells.length : 0;
     let isHome = grid[bot.x] && grid[bot.x][bot.y] === bot.id;
 
-    // --- Priešo uodegos paieška (attack tikslui) ---
+    // --- Priešo uodegos paieška ---
     let nearestEnemyTrail = null;
     let minDistEnemyTrail = Infinity;
-    for (let x = Math.max(0, bot.x - 30); x < Math.min(COLS, bot.x + 30); x++) {
-        for (let y = Math.max(0, bot.y - 30); y < Math.min(ROWS, bot.y + 30); y++) {
+    for (let x = Math.max(0, bot.x - 35); x < Math.min(COLS, bot.x + 35); x++) {
+        for (let y = Math.max(0, bot.y - 35); y < Math.min(ROWS, bot.y + 35); y++) {
             if (trails[x][y] === enemy.id) {
                 let dist = Math.abs(bot.x - x) + Math.abs(bot.y - y);
                 if (dist < minDistEnemyTrail) {
@@ -281,113 +287,119 @@ function updateAI(bot, enemy) {
         }
     }
 
+    // --- Priešo atstumas ---
+    let distToEnemy = Math.abs(bot.x - enemy.x) + Math.abs(bot.y - enemy.y);
+    let enemyHasTrail = enemy.trailCells && enemy.trailCells.length > 0;
+
     // --- Būsenos perėjimai ---
 
-    // 1. Jei matome priešo uodegą netoli IR neturime ilgos savo uodegos → ATTACK
-    if (nearestEnemyTrail && minDistEnemyTrail < 15 && trailLen < 10) {
+    // 1. Priešas turi uodegą IR jis netoli → ATTACK (agresyviai persekiojam)
+    if (enemyHasTrail && nearestEnemyTrail && minDistEnemyTrail < 20 && trailLen < 8) {
         aiState = 'attack';
     }
-    // 2. Jei uodega ilga arba pavojinga → RETURN
+    // 2. Priešas netoli ir mes namie → HUNT (einam link priešo, kad jis užeitų ant mūsų)
+    else if (!enemyHasTrail && distToEnemy < 18 && trailLen === 0 && isHome) {
+        aiState = 'hunt';
+    }
+    // 3. Uodega per ilga → RETURN
     else if (trailLen > 12) {
         aiState = 'return';
     }
-    // 3. Jei esame namie ir neturime uodegos → EXPAND
-    else if (isHome && trailLen === 0) {
+    // 4. Esame namie, nėra uodegos → EXPAND
+    else if (isHome && trailLen === 0 && aiState !== 'hunt') {
         aiState = 'expand';
         aiPickNewLoop(bot);
     }
-    // 4. Jei expand fazėje ir baigėme planą, reikia pasukti (kilpos logika)
+    // 5. Expand baigtas → sukame
     else if (aiState === 'expand' && aiPlanSteps <= 0) {
         aiLoopPhase++;
         if (aiLoopPhase >= 4) {
-            // Kilpa baigta, grįžtam namo
             aiState = 'return';
         } else {
-            // Kita kilpos dalis
             if (aiLoopPhase === 1 || aiLoopPhase === 3) {
-                // Šonas (statmena kryptis)
                 let perp = aiGetPerpendicularDir(aiPlanDir);
-                // Jei nesaugu, bandome kitą šoną
-                if (!aiIsDirSafe(bot, perp)) {
-                    perp = [-perp[0], -perp[1]];
-                }
+                if (!aiIsDirSafe(bot, perp)) perp = [-perp[0], -perp[1]];
                 aiPlanDir = perp;
                 aiPlanSteps = aiLoopSideSize;
             } else if (aiLoopPhase === 2) {
-                // Atgal (priešinga kryptis nei pirmyn)
                 aiPlanDir = [-aiPlanDir[0], -aiPlanDir[1]];
-                // Bet reikia, kad tai nebūtų "atgal" judėjimas
-                // Kadangi jau pasukome šone, šita kryptis jau bus "pražygiuota"
                 aiPlanSteps = aiLoopSize;
             }
         }
     }
 
-    // --- Krypties pasirinkimas pagal būseną ---
+    // --- Krypties pasirinkimas ---
     let chosenDir = null;
 
     if (aiState === 'attack' && nearestEnemyTrail) {
-        // Einame link priešo uodegos
-        let bestDir = null;
-        let bestDist = Infinity;
-        for (let d of dirs) {
-            if (d[0] === -bot.dx && d[0] !== 0) continue;
-            if (d[1] === -bot.dy && d[1] !== 0) continue;
-            if (!aiIsDirSafe(bot, d)) continue;
-
-            let nx = bot.x + d[0];
-            let ny = bot.y + d[1];
-
-            // Tiesioginai ant priešo uodegos = instant win
-            if (trails[nx][ny] === enemy.id) {
-                chosenDir = d;
-                break;
+        // BFS link artimiausio priešo trail langelio
+        let bfsDir = aiFindDirToTarget(bot, nearestEnemyTrail.x, nearestEnemyTrail.y);
+        if (bfsDir && aiIsDirSafe(bot, bfsDir)) {
+            chosenDir = bfsDir;
+        } else {
+            // Fallback: greedy
+            let bestDir = null;
+            let bestDist = Infinity;
+            for (let d of dirs) {
+                if (d[0] === -bot.dx && d[0] !== 0) continue;
+                if (d[1] === -bot.dy && d[1] !== 0) continue;
+                if (!aiIsDirSafe(bot, d)) continue;
+                let nx = bot.x + d[0];
+                let ny = bot.y + d[1];
+                if (trails[nx][ny] === enemy.id) { chosenDir = d; break; }
+                let dist = Math.abs(nx - nearestEnemyTrail.x) + Math.abs(ny - nearestEnemyTrail.y);
+                if (dist < bestDist) { bestDist = dist; bestDir = d; }
             }
-
-            let dist = Math.abs(nx - nearestEnemyTrail.x) + Math.abs(ny - nearestEnemyTrail.y);
-            if (dist < bestDist) {
-                bestDist = dist;
-                bestDir = d;
-            }
+            if (!chosenDir) chosenDir = bestDir;
         }
-        if (!chosenDir) chosenDir = bestDir;
-
-        // Jei priešo uodegos nebėra, grįžtam prie expand/return
-        if (!nearestEnemyTrail || minDistEnemyTrail > 20) {
+        // Jei priešo uodegos nebėra arba per toli → keičiam būseną
+        if (!nearestEnemyTrail || minDistEnemyTrail > 25 || !enemyHasTrail) {
             aiState = trailLen > 3 ? 'return' : 'expand';
             if (aiState === 'expand') aiPickNewLoop(bot);
         }
 
-    } else if (aiState === 'return') {
-        // BFS kelias namo
-        let homeDir = aiFindDirToHome(bot);
-        if (homeDir) {
-            // Patikriname ar saugu
-            if (aiIsDirSafe(bot, homeDir)) {
-                chosenDir = homeDir;
+    } else if (aiState === 'hunt') {
+        // Einam link priešo paties (kad jis atsilenktų į mus arba atsidurtų nepatogioj padėty)
+        if (!enemy.dead) {
+            let bfsDir = aiFindDirToTarget(bot, enemy.x, enemy.y);
+            if (bfsDir && aiIsDirSafe(bot, bfsDir)) {
+                chosenDir = bfsDir;
+            }
+        }
+        // Jei priešas išėjo toli arba mes praradome namų bazę → išeiname iš hunt
+        if (distToEnemy > 22 || enemyHasTrail || !isHome) {
+            if (enemyHasTrail && nearestEnemyTrail) {
+                aiState = 'attack';
+            } else if (trailLen > 3) {
+                aiState = 'return';
+            } else {
+                aiState = 'expand';
+                aiPickNewLoop(bot);
             }
         }
 
-        // Jei jau namie, pradedame naują kilpą
+    } else if (aiState === 'return') {
+        let homeDir = aiFindDirToHome(bot);
+        if (homeDir && aiIsDirSafe(bot, homeDir)) {
+            chosenDir = homeDir;
+        }
         if (isHome && trailLen === 0) {
             aiState = 'expand';
             aiPickNewLoop(bot);
         }
 
     } else if (aiState === 'expand') {
-        // Vykdome suplanuotą kilpą
         if (aiPlanDir && aiPlanSteps > 0) {
             if (aiIsDirSafe(bot, aiPlanDir)) {
                 chosenDir = aiPlanDir;
                 aiPlanSteps--;
             } else {
-                // Kryptis nesaugi - bandome pasukti anksčiau
-                aiPlanSteps = 0; // Privers pasukti kitą kadrą
+                aiPlanSteps = 0;
             }
         }
     }
 
-    // --- Fallback: jei vis dar nėra pasirinktos krypties, renkamės geriausią saugią ---
+    // --- Fallback ---
     if (!chosenDir) {
         let safeDirs = [];
         for (let d of dirs) {
@@ -396,18 +408,13 @@ function updateAI(bot, enemy) {
             if (aiIsDirSafe(bot, d)) safeDirs.push(d);
         }
         if (safeDirs.length > 0) {
-            // Prioritetas: link savo teritorijos jei turime uodegą
             if (trailLen > 0) {
                 let bestDir = null;
                 let bestDist = Infinity;
                 for (let d of safeDirs) {
                     let nx = bot.x + d[0];
                     let ny = bot.y + d[1];
-                    if (grid[nx][ny] === bot.id) {
-                        chosenDir = d; // Iš karto einam namo
-                        break;
-                    }
-                    // Rasti artimiausią teritoriją šia kryptimi
+                    if (grid[nx][ny] === bot.id) { chosenDir = d; break; }
                     for (let step = 1; step <= 10; step++) {
                         let sx = bot.x + d[0] * step;
                         let sy = bot.y + d[1] * step;
@@ -425,7 +432,7 @@ function updateAI(bot, enemy) {
         }
     }
 
-    // --- Taikome pasirinktą kryptį ---
+    // --- Taikome kryptį ---
     if (chosenDir) {
         bot.nextDx = chosenDir[0];
         bot.nextDy = chosenDir[1];
